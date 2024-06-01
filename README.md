@@ -1,6 +1,8 @@
 <a name="readme-top"></a>
 
 [![LinkedIn][linkedin-shield]][linkedin-url]
+[![Twitter][twitter-shield]][twitter-url]
+
 
 <!-- PROJECT LOGO -->
 <br />
@@ -32,6 +34,9 @@ I plan on using `Llama3` for the chat functionality of the assistant and `Codest
 
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/satvikgarg15/
+[twitter-shield]: https://img.shields.io/badge/Twitter-00000?style=for-the-badge&logo=x&colorB=555
+[twitter-url]: https://twitter.com/sgarg0310
+
 [python.org]: https://img.shields.io/badge/Python-000000?style=for-the-badge&logo=python&logoColor=white
 [ollama.com]: https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white
 [Ollama-url]: https://ollama.com/
