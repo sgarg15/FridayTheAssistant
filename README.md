@@ -36,7 +36,32 @@ Currently researching effective ways to do "Dependency & Security Checks" on the
 * [![Ollama][ollama.com]][Ollama-url]
 * [![Python][python.org]][Python-url]
 
+## Getting Started
+In the systems current state, it is quite easy to get started. Just clone the repository using the following command:
 
+### Prerequisites
+* Python 3.11 or higher
+* Ollama Installed on Linux System [Ollama Installation](https://ollama.com/download/linux)
+* Codestral/Llama3 Installed on Linux System [Model Installation](https://ollama.com/library)
+* Ollama running through the command line, with the following command: `ollama serve`
+
+And you should be good to go! (Post an issue if something goes wrong!)
+
+### Installation
+
+```sh
+git clone https://github.com/sgarg15/FridayTheAssistant
+```
+
+Then, navigate to the directory and run the following command to install the required dependencies:
+```sh
+pip install -r requirements.txt
+```
+
+Finally, run the following command to start the assistant:
+```sh
+python3 friday.py
+```
 
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/satvikgarg15/

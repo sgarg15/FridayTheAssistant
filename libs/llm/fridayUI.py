@@ -24,7 +24,7 @@ class FridayUI:
             print(self.colors.BOLD + "\nAssistant: " + self.colors.END, end='')
 
             message = {'role': 'assistant', 'content': ''}
-            async for response in self.fridayLLM.promptLLM(content_in, model, self.messages):
+            async for response in self.fridayLLM.promptLLM(model, self.messages):
                 content = response['message']['content']
                 print(content, end='', flush=True)
                 message['content'] += content
