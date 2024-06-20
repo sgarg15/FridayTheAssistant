@@ -42,11 +42,11 @@ class FridayUI:
             #Format the response to get the code and get any content before or after the code
             msg_content: str = message['content']
             
-            # llmCode = extractCode(msg_content)
-            # logger.info(f"Code: \n{llmCode}")
+            llmCode = extractCode(msg_content)
+            logger.info(f"Code: \n{llmCode}")
             
-            # llmContent = extractContent(msg_content)
-            # logger.info(f"Content: \n{llmContent}")
+            llmContent = extractContent(msg_content)
+            logger.info(f"Content: \n{llmContent}")
             
             # typeEffect(llmContent, delay=0.01)
             
