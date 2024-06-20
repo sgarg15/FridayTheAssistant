@@ -1,9 +1,11 @@
 import ollama
 from libs.llm.chatbot import FridayLLM
-from libs.utils.cmmn_functions import extractCode, extractContent
+from libs.utils.cmmn_functions import extractCode, extractContent, typeEffect
 from libs.utils.constants import Constants
 from libs.utils.logging.logger import logger
 import asyncio
+
+from libs.utils.terminal.runner import Runner
 
 class FridayUI:
     """
@@ -13,6 +15,7 @@ class FridayUI:
         self.fridayLLM = FridayLLM()
         self.constants = Constants()
         self.colors = self.constants.color
+        self.runner = Runner()
         self.messages = []
 
     async def startChat(self, model: str):
@@ -44,9 +47,25 @@ class FridayUI:
             
             llmContent = extractContent(msg_content)
             logger.info(f"Content: \n{llmContent}")
+            
+            # typeEffect(llmContent, delay=0.01)
+            
+            # if llmCode:
+            #     # Ask the user if they want to execute the code
+            #     print("\n\n")
+            #     typeEffect(llmCode, delay=0.01)
+                
+            #     user_input = input("\n\nDo you want to execute the code above? (y/n): ")
+                
+            #     if user_input.lower() == 'y':
+            #         # Execute the code
+            #         consoleOutput = self.runner.runCode(llmCode)
+            #         logger.info(f"Console Output: \n{consoleOutput}")
+            #     else:
+            #         print("Code not executed.")        
 
             print("\n")
         print('Goodbye!')
 
     def runChat(self, model: str):
-        asyncio.run(self.startChat(model=model))
+        asyncio.run(self.startChat(model=model)) 
