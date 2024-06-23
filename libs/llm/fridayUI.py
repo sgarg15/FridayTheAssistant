@@ -1,6 +1,7 @@
 import time
 import ollama
 from libs.llm.chatbot import FridayLLM
+from libs.memory.chromadb import FridayMemory
 from libs.utils.cmmn_functions import extractCode, extractContent, typeEffect
 from libs.utils.constants import Constants
 from libs.utils.logging.logger import logger
@@ -15,6 +16,7 @@ class FridayUI:
     def __init__(self):
         self.fridayLLM = FridayLLM()
         self.client: ollama.AsyncClient = ollama.AsyncClient()
+        self.memoryModule = FridayMemory()
         self.constants = Constants()
         self.colors = self.constants.color
         self.runner = Runner()
@@ -23,24 +25,32 @@ class FridayUI:
     async def startChat(self, model: str):
         while True:
             content_in = input(self.colors.BOLD + "You: " + self.colors.END)
+            user_msg = {'role': 'user', 'content': content_in, 'timestamp': time.time()}
+            current_interaction = [user_msg]
+            
             if content_in:
-                self.messages.append({'role': 'user', 'content': content_in, 'timestamp': time.time()})
+                self.messages.append(user_msg)
+            else:
+                continue
 
             if content_in.lower() == "exit":
                 break
 
             print(self.colors.BOLD + "\nAssistant: " + self.colors.END, end='')
 
-            message = {'role': 'assistant', 'content': '', 'timestamp': time.time()}
+            assistant_msg = {'role': 'assistant', 'content': '', 'timestamp': time.time()}
             async for response in self.fridayLLM.promptLLM(model, self.messages, self.client):
                 content = response['message']['content']
+                #Print the assistant's response
                 print(content, end='', flush=True)
-                message['content'] += content
-
-            self.messages.append(message)
+                assistant_msg['content'] += content
+                
+            current_interaction.append(assistant_msg)
+            self.memoryModule.store_conversation_per_interaction(current_interaction)
+            self.messages.append(assistant_msg)
                         
             #Format the response to get the code and get any content before or after the code
-            msg_content: str = message['content']
+            msg_content: str = assistant_msg['content']
             
             llmCode = extractCode(msg_content)
             logger.info(f"Code: \n{llmCode}")
@@ -65,7 +75,7 @@ class FridayUI:
             #         print("Code not executed.")        
 
             print("\n")
-        logger.info(f"conversation: \n{self.messages}")
+        # logger.info(f"conversation: \n{self.messages}")
         print('Goodbye!')
 
     def runChat(self, model: str):
