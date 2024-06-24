@@ -30,17 +30,25 @@ if __name__ == "__main__":
     
     convo2 = [{'role': 'user', 'content': 'Can you create a file on my desktop', 'timestamp': 1718938835.898585}, {'role': 'assistant', 'content': "Before I can generate the Python script, could you please clarify some details?\n\n1. What should be the name of the file?\n2. What content should be written to the file (e.g., text, blank, or specific data)?\n3. Would you like me to create a new folder on your desktop if it doesn't exist already?\n\nPlease provide these clarifications, and I'll generate a Python script to accomplish your task!", 'timestamp': 1718938835.898585}, {'role': 'user', 'content': 'yea you can name it "bob" and it should be a tct document, and just make it directly on my desktop directory', 'timestamp': 1718938961.958759}, {'role': 'assistant', 'content': 'Here\'s the Python script to create a text file named "bob.txt" with no content on your desktop:\n\n```python\nimport os\n\n# Get the Desktop path\ndesktop_path = os.path.join(os.path.expanduser("~"), "Desktop")\n\n# Create the new file\nfile_path = os.path.join(desktop_path, \'bob.txt\')\n\n# Check if the file already exists and delete it if it does\nif os.path.exists(file_path):\n    os.remove(file_path)\n\n# Create a new text file with no content\nwith open(file_path, \'w\') as file:\n    pass\n\nprint(f"File \'{file_path}\' created on your desktop.")\n```\n\nPlease note that this script will overwrite any existing file named "bob.txt" on your desktop. If you want to avoid overwriting files, I can modify the script to prompt for confirmation before deleting an existing file.\n\nAlso, please ensure that you have write permissions in your desktop directory. If you encounter any issues, feel free to let me know!', 'timestamp': 1718938961.958759}, {'role': 'user', 'content': 'exit', 'timestamp': 1718946427.0866258}]
     
-    for i in range(0, len(convo2)-1, 2):
-        interaction = []
-        interaction.append(convo2[i])
-        interaction.append(convo2[i+1])
+    # for i in range(0, len(convo1)-1, 2):
+    #     interaction = []
+    #     interaction.append(convo1[i])
+    #     interaction.append(convo1[i+1])
 
-        mem.store_conversation_per_interaction(interaction)
+    #     mem.store_conversation_per_interaction(interaction)
 
-        print("Conversation Stored!")
+    #     print("Conversation Stored!")
+    # for i in range(0, len(convo2)-1, 2):
+    #     interaction = []
+    #     interaction.append(convo2[i])
+    #     interaction.append(convo2[i+1])
+
+    #     mem.store_conversation_per_interaction(interaction)
+
+    #     print("Conversation Stored!")
     
-    print(mem.get_n_items())
-    print(mem.retrieve_relevant_conversations("Can you create a file on my desktop", 2))
+    # print(mem.get_all_items())
+    print(mem.retrieve_relevant_conversations("Can you create a file on my desktop",))
     
     # mem.store_conversation(convo)
     
