@@ -86,8 +86,11 @@ class FridayMemory:
         return results
     
     def augment_query_with_context(self, query):
-        relevant_conversations = self.retrieve_relevant_conversations(query)
-        context = "\n".join([conv['text'] for conv in relevant_conversations])
+        relevant_conversations = self.retrieve_relevant_conversations(query, 2)
+        if len(relevant_conversations['metadatas']) == 0:
+            return query
+        metadata = relevant_conversations['metadatas'][0]
+        context = metadata[0]['assistantReply']
         augmented_query = f"Context:\n{context}\n\nQuery:\n{query}"
         return augmented_query
     

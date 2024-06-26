@@ -39,16 +39,15 @@ def extractCode(text: str) -> list:
         text = text[end + len(delimiter):]
     
     return code_blocks
-def extractContent(text: str) -> str:
+def extractContent(text: str) -> list:
     """
         This function is used to extract the content from the text. There might be more than one content block in the text. This function will extract all the content blocks and return a list of content blocks.
     """
     if '```python' not in text:
         return text
     
-    content_blocks = text.split('```python')[0]
-    return content_blocks
-
+    return re.sub(r'```.*?```', '', text, flags=re.DOTALL)
+    
 def typeEffect(text: str, delay=0.5) -> str:
     """
     Prints the given text one character at a time with a delay between each character.

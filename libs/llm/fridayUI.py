@@ -25,7 +25,9 @@ class FridayUI:
     async def startChat(self, model: str):
         while True:
             content_in = input(self.colors.BOLD + "You: " + self.colors.END)
-            user_msg = {'role': 'user', 'content': content_in, 'timestamp': time.time()}
+            conextQuery = self.memoryModule.augment_query_with_context(content_in)
+            logger.info(f"Context Query: \n{conextQuery}")
+            user_msg = {'role': 'user', 'content': conextQuery, 'timestamp': time.time()}
             current_interaction = [user_msg]
             
             if content_in:

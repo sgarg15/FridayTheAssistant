@@ -48,7 +48,7 @@ if __name__ == "__main__":
     #     print("Conversation Stored!")
     
     # print(mem.get_all_items())
-    print(mem.retrieve_relevant_conversations("Can you create a file on my desktop",))
+    # print(mem.augment_query_with_context("Can you open vscode"))
     
     # mem.store_conversation(convo)
     
@@ -84,4 +84,4 @@ if __name__ == "__main__":
     # print(results)
    
     # friday.runChat(model="friday_codestral")
-    # friday.runChat(model="llama3-q8")
+    friday.runChat(model="llama3-q8")
