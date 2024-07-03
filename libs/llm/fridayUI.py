@@ -15,40 +15,38 @@ class FridayUI:
     """
     def __init__(self):
         self.fridayLLM = FridayLLM()
-        self.client: ollama.AsyncClient = ollama.AsyncClient()
         self.memoryModule = FridayMemory()
         self.constants = Constants()
         self.colors = self.constants.color
         self.runner = Runner()
         self.messages = []
-
+      
     async def startChat(self, model: str):
         while True:
             content_in = input(self.colors.BOLD + "You: " + self.colors.END)
-            conextQuery = self.memoryModule.augment_query_with_context(content_in)
-            logger.info(f"Context Query: \n{conextQuery}")
-            user_msg = {'role': 'user', 'content': conextQuery, 'timestamp': time.time()}
+            logger.info(f"Context Query: \n{content_in}")
+            user_msg = {'role': 'user', 'content': content_in, 'timestamp': time.time()}
             current_interaction = [user_msg]
-            
-            if content_in:
-                self.messages.append(user_msg)
-            else:
-                continue
-
             if content_in.lower() == "exit":
                 break
 
+            # Memory things start here before sending to the LLM
+            msg_with_context = await self.memoryModule.process_user_msg_with_memory(user_msg)
+
+            if content_in:
+                self.messages.append(msg_with_context)
+            else:
+                continue
+            
             print(self.colors.BOLD + "\nAssistant: " + self.colors.END, end='')
 
             assistant_msg = {'role': 'assistant', 'content': '', 'timestamp': time.time()}
-            async for response in self.fridayLLM.promptLLM(model, self.messages, self.client):
+            async for response in self.fridayLLM.promptLLM(model, self.messages):
                 content = response['message']['content']
                 #Print the assistant's response
                 print(content, end='', flush=True)
                 assistant_msg['content'] += content
                 
-            current_interaction.append(assistant_msg)
-            self.memoryModule.store_conversation_per_interaction(current_interaction)
             self.messages.append(assistant_msg)
                         
             #Format the response to get the code and get any content before or after the code

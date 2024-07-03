@@ -1,11 +1,29 @@
 import os
-import subprocess
+from openpyxl import load_workbook, Workbook
 
-# Define the path to the VSCode executable (may vary depending on your OS)
-vscode_path = 'C:/Program Files/VSCode/code.exe'
+# Ensure the Desktop path
+desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+file_path = os.path.join(desktop_path, 'GST Calc.xlsx')
 
-# Navigate to the home directory
-home_dir = os.path.expanduser('~')
+try:
+    # Load the workbook and sheet
+    wb = load_workbook(filename=file_path)
+except FileNotFoundError:
+    wb = Workbook()
+    ws = wb.active
+else:
+    wb = load_workbook(filename=file_path)
+    ws = wb.active
 
-# Launch VSCode using subprocess with full path to the executable
-subprocess.run([os.path.join(home_dir, vscode_path), '.'])
+# Add data to the sheet
+row_num = ws.max_row + 1
+ws.cell(row=row_num, column=1).value = '23 Feb'
+ws.cell(row=row_num, column=2).value = 'BioMed'
+ws.cell(row=row_num, column=3).value = 198.24
+ws.cell(row=row_num, column=4).value = 8.85
+ws.cell(row=row_num, column=5).value = 12.39
+
+# Save the workbook
+wb.save(file_path)
+
+print(f"Data added to Excel file 'GST Calc.xlsx'!")
