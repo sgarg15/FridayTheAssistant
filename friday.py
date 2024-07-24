@@ -7,14 +7,28 @@ from chromadb.utils.embedding_functions import OllamaEmbeddingFunction
 
 from libs.memory.chromadb import FridayMemory
 from libs.llm.chatbot import FridayLLM
+from libs.utils.logging.logger import logger
 
 
 async def func():
     mem = FridayMemory()
     # print(mem.get_all_items())
-    finalQuery = await mem.process_user_msg_with_memory("Open a new tab on chrome which is my favorite browser")    
+    # finalQuery = await mem.process_user_msg_with_memory("Remember: When I mention Siege in the context of gaming, I mean the Rainbow Six Siege game in Ubisoft Connect.")
+    # finalQuery = await mem.process_user_msg_with_memory("Remeber: To open Siege you have to first open the application called, Ubisoft Connect.")    
+    # finalQuery = await mem.process_user_msg_with_memory("Open Siege")
+    # finalQuery = await mem.process_user_msg_with_memory("Chrome is my favourite browser. For any browser related activity, use Chrome")
+    # finalQuery = await mem.process_user_msg_with_memory("Open youtube and search about ReInforcement Learning. I want to know more about Reinforcement Learning.")
+    # finalQuery = await mem.process_user_msg_with_memory("Can you convert the image on my desktop from jpg to png?")
+    finalQuery = await mem.process_user_msg_with_memory("Create a file on my desktop, and name it my name")
     
     print("finalQuery: ", finalQuery)
+    
+    logger.info(f"finalQuery: {finalQuery}")
+    logger.info(f"Memories: {mem.get_all_items()}")
+    
+    # mem.delete_id("2024-07-24 11:12:32.860492")
+    
+    
     
 
 if __name__ == "__main__":

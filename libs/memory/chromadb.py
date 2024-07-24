@@ -34,7 +34,7 @@ class FridayMemory:
   
   
         ## Check to see if any infromation is needed to put in memory
-        await self._memory_storage(context_query)
+        await self._memory_storage(user_msg)
         
         return context_query
         
@@ -53,9 +53,12 @@ class FridayMemory:
         """
         
         logger.info("ANALYZING QUERY")
-        model = "phi3:3.8b-mini-128k-instruct-q8_0"
+        # model = "phi3:3.8b-mini-128k-instruct-q8_0"
+        model = "llama3"
         
         response = await self.analyzer.analyzerLLm(model, query, prompt)
+        
+        print("# RESPONSE: " + response['response'])
         
         return response['response']
         
@@ -70,10 +73,12 @@ class FridayMemory:
         Returns:
             str: The retrieved relevant information from memory.
         """
-        logger.info("LOOKING FOR RELEVANT INFO IN MEMORY")
+        print("LOOKING FOR RELEVANT INFO IN MEMORY")
         
         # Use the query directly to get the relevant information from the memory
-        memories_list = self._retrieve_relevant_memories(query)
+        memories_list = self._retrieve_relevant_inputs(self._retrieve_relevant_memories(query))
+        
+        logger.info("Initial memory list: " + str(memories_list))
         
         # Using Phi3 check if there is a Task in the query. Have it only return Yes or No. And the prompt can be:
             # "Does any part of the TEXT ask the agent to perform a task or solve a problem? Answer with just one word, yes or no."
@@ -88,7 +93,7 @@ class FridayMemory:
             generalizedTask = await self._analyze_query(task, "Summarize very briefly, in general terms, the type of task described in the TEXT. Leave out details that might not appear in a similar problem.")       
             
             # Query to memory using the generalized task
-            memories_list.extend(self._retrieve_relevant_memories(generalizedTask))
+            memories_list.extend(self._retrieve_relevant_inputs(self._retrieve_relevant_memories(generalizedTask)))
         
         # Remove any duplicates from the returned memories, ie. if the same memory is returned twice it will only be returned once in the list of memories
         memories_list = list(set(memories_list))
@@ -98,7 +103,6 @@ class FridayMemory:
         # Add the new memories to the query
         return query + self._memories_to_string(memories_list)
 
-    ## UPDATE TO NOT ADD MEMORY IF IT ALREADY EXISTS
     async def _memory_storage(self, query:str):
         """
         Asynchronously stores relevant information from a given query in memory.
@@ -116,6 +120,8 @@ class FridayMemory:
         After that, it checks if the query contains information that can be stored in memory.
         If it does, it extracts the question and answer from the query and stores them in memory.
         """
+        print("LOOKING FOR INFO TO STORE IN MEMORY")
+        
         # Check to see if the query contains a task. The prompt can be:
             # Does any part of the TEXT ask the agent to perform a task or solve a problem? Answer with just one word, yes or no.
         containsTask = await self._analyze_query(query, "Does any part of the TEXT ask the agent to perform a task or solve a problem? Answer with just one word, yes or no.")
@@ -136,10 +142,12 @@ class FridayMemory:
                     # "Summarize very briefly, in general terms, the type of task described in the TEXT. Leave out details that might not appear in a similar problem."
                 generalizedTask = await self._analyze_query(task, "Summarize very briefly, in general terms, the type of task described in the TEXT. Leave out details that might not appear in a similar problem.")
                 
-                # Store the task/advice pair in the memory
-                self._store_pair_in_memory(generalizedTask, advice)
+                duplicateExists = self.check_duplicate(advice)
                 
-                logger.info(f"Following Memory Pair Stored: \n{generalizedTask} : {advice}")
+                # Store the task/advice pair in the memory
+                if not duplicateExists: self._store_pair_in_memory(generalizedTask, advice)
+                
+                logger.info(f"Following Task-Advice Pair Stored: \n{generalizedTask} : {advice}")
                     
         
         # Check to see if query has information that can should be committed to memory. And the prompt can be:
@@ -154,12 +162,14 @@ class FridayMemory:
             
             # Extract any information that should be stored in memory. And the prompt can be:
                 # "Copy the information from the TEXT that should be committed to memory. Add no explanation."
-            answer = await self._analyze_query(query, "Copy the information from the TEXT that should be committed to memory. Add no explanation.")
+            answer = await self._analyze_query(query, "Extract and reword the information from the TEXT that should be committed to memory. Keep it short and to the point. Add no explanation.")
             
             # Store the Question/Answer Pair in the memory
-            self._store_pair_in_memory(question, answer)
+            duplicateExists = self.check_duplicate(answer)
             
-            logger.info(f"Following Memory Pair Stored: \n{question} : {answer}")
+            if not duplicateExists: self._store_pair_in_memory(question, answer)
+            
+            logger.info(f"Following Question-Answer Pair Stored: \n{question} : {answer}")
           
     def _store_pair_in_memory(self, item1, item2):
         """
@@ -173,13 +183,30 @@ class FridayMemory:
             None: This function does not return anything.
         """
         
-        item1_embedding = self.ollamaEmbedder(item1)
+        item2_embedding = self.ollamaEmbedder(item2)
         
-        self.conversationsDB.upsert(ids=[str(datetime.datetime.now())], documents=item1, embeddings=item1_embedding[0], metadatas=[{"response": item2, "timestamp": str(datetime.datetime.now())}])
+        self.conversationsDB.upsert(ids=[str(datetime.datetime.now())], documents=item2, embeddings=item2_embedding[0], metadatas=[{"response": item1, "timestamp": str(datetime.datetime.now())}])
         
         return
         
-    def _retrieve_relevant_memories(self, query: str, k=5, threshold=0.4):
+    def check_duplicate(self, query: str) -> bool:
+        relevantMemories = self._retrieve_relevant_memories(query)
+        
+        threshold = 0.3
+              
+        for memory in relevantMemories:
+            logger.info(f"memories: {memory}")
+            if memory[2] < threshold:
+                return True
+        
+        return False
+        
+    def _retrieve_relevant_inputs(self, memories_list: list) -> list:
+        memories_text_list = [memory[0] for memory in memories_list]
+        
+        return memories_text_list
+     
+    def _retrieve_relevant_memories(self, query: str, k=5, threshold=0.5):
         """
         Retrieves relevant memories based on a given query.
 
@@ -203,6 +230,8 @@ class FridayMemory:
             query_embeddings=query_embedding[0],
             n_results=k,
         )
+        
+        logger.info("Initial Search without threshold: {}".format(results))
 
         number_of_results = len(results['distances'][0])
         
@@ -215,11 +244,9 @@ class FridayMemory:
                 
             if distance < threshold:
                 logger.debug("\nINPUT-OUTPUT PAIR RETRIEVED FROM VECTOR DATABASE:\n  INPUT1\n    {}\n  OUTPUT\n    {}\n  DISTANCE\n    {}".format(document, metadata, distance))
-                memories.append((document, metadata, distance))
-                
-        memories_text_list = [memory[1] for memory in memories]
+                memories.append([document, metadata, distance])
         
-        return memories_text_list
+        return memories
     
     def _memories_to_string(self, memories: list) -> str:
         """
@@ -254,6 +281,9 @@ class FridayMemory:
     def get_all_items(self):
         results = self.conversationsDB.get()
         return results
+    
+    def delete_id(self, id):
+        self.conversationsDB.delete(ids=[id])
     
     def store_conversation_per_interaction(self, interaction: list):
         # Idea is to store every interaction between the user and the assistant. So the document will be the users message and the metadata will contain the timestamp and the message returned by the assistant. 
